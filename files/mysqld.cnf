@@ -1,0 +1,36 @@
+[mysqld]
+character-set-server = utf8
+sql_mode=NO_ENGINE_SUBSTITUTION
+skip-external-locking
+skip_name_resolve
+explicit_defaults_for_timestamp
+
+log_error = /var/log/mysql/error.log
+
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/slowquery.log
+log_slow_filter = "full_scan,tmp_table_on_disk,filesort_on_disk"
+log_slow_verbosity = "full"
+
+key_buffer_size = 16M
+max_allowed_packet = 64M
+thread_stack = 192K
+thread_cache_size = 8
+myisam-recover-options = BACKUP
+thread_pool_size = 16
+
+query_cache_type = 0
+query_cache_size = 0
+
+tmp_table_size = 32M
+max_heap_table_size = 32M
+
+table_definition_cache = 2048
+table_open_cache = 2048
+innodb_open_files = 2048
+
+innodb_buffer_pool_size = 2G
+innodb_buffer_pool_instances = 2
+innodb_flush_method = O_DIRECT
+innodb_doublewrite = 0
+innodb_flush_log_at_trx_commit = 0

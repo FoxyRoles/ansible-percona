@@ -1,0 +1,11 @@
+---
+
+- name: percona apt key present
+  apt_key: id=8507EFA5 keyserver=keyserver.ubuntu.com state=present
+
+- name: percona apt list present
+  apt_repository:
+    repo: "deb http://repo.percona.com/apt {{ ansible_distribution_release }} main"
+    filename: percona
+    state: present
+    update_cache: true

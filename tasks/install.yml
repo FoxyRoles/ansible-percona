@@ -1,0 +1,26 @@
+---
+
+- name: percona debconf settings
+  debconf: name='percona-server-server-5.6' question='{{ item.question }}' value='{{ percona_root_password }}' vtype='password'
+  with_items:
+   - { question: 'percona-server-server/root_password' }
+   - { question: 'percona-server-server/root_password_again' }
+
+- name: percona is installed
+  apt: name="{{ packages }}" state=present
+  vars:
+    packages:
+     - percona-server-server-5.7
+     - percona-server-client-5.7
+
+- name: percona is running
+  service: name=mysql state=started enabled=yes
+
+- name: ensure config is present
+  copy: src="{{ item }}.cnf" dest="/etc/mysql/conf.d/{{ item }}.cnf"
+  with_items:
+   - client
+   - mysqld
+   - mysqldump
+  notify:
+   - restart mysql

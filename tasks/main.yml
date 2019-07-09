@@ -1,0 +1,8 @@
+---
+
+- import_tasks: repository.yml
+- import_tasks: install.yml
+- import_tasks: file-limit.yml
+  when: ansible_distribution_version in ["16.04", "18.04"]
+- import_tasks: mycnf.yml
+- import_tasks: credentials.yml
