@@ -1,9 +1,13 @@
 ---
 
 - name: ensure mysql.service.d directory present
-  file: path=/lib/systemd/system/mysql.service.d state=directory
+  file:
+    path: /lib/systemd/system/mysql.service.d
+    state: directory
 
 - name: ensure file-limit.conf present
-  copy: src=file-limit.conf dest=/lib/systemd/system/mysql.service.d/file-limit.conf
+  copy:
+    src: file-limit.conf
+    dest: /lib/systemd/system/mysql.service.d/file-limit.conf
   notify:
     - restart mysql service

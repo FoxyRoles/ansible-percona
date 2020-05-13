@@ -1,4 +1,7 @@
 ---
 
 - name: root my.cnf is present
-  template: src=my.cnf.j2 dest=/root/.my.cnf mode=0600
+  template:
+    src: my.cnf.j2
+    dest: /root/.my.cnf
+    mode: 0600
