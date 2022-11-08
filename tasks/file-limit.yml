@@ -7,7 +7,9 @@
 
 - name: ensure file-limit.conf present
   copy:
-    src: file-limit.conf
     dest: /lib/systemd/system/mysql.service.d/file-limit.conf
+    content: |
+      [Service]
+      LimitNOFILE={{ percona_nofile }}
   notify:
     - restart mysql service

@@ -2,8 +2,8 @@
 
 - name: percona apt key present
   apt_key:
-   id: 8507EFA5
-   keyserver: keys.gnupg.net
+   id: 9334A25F8507EFA5
+   keyserver: keyserver.ubuntu.com
    state: present
 
 - name: percona apt list present

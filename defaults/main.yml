@@ -1,8 +1,12 @@
 ---
 
-db_collation: utf8_general_ci
+percona_db_collation: utf8_general_ci
 
 percona_local_passdb: "{{ local_passdb | default('~/.ansible_percona_passwords') }}"
 percona_pass_len: 24
 percona_pass_complexity: "ascii_letters,digits" # ascii_letters,digits,hexdigits,punctuation
 percona_root_password: "{{ lookup('password', [percona_local_passdb, '/', inventory_hostname, '/', 'percona.root', ' chars={{ percona_pass_complexity }} length={{ percona_pass_len }}']|join) }}"
+
+percona_version: 5.7
+
+percona_nofile: 10000

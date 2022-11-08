@@ -2,7 +2,7 @@
 
 - name: percona debconf settings
   debconf:
-    name: "percona-server-server-5.7"
+    name: "percona-server-server-{{ percona_version }}"
     question: "{{ item.question }}"
     value: "{{ percona_root_password }}"
     vtype: "password"
@@ -13,8 +13,8 @@
 - name: percona is installed
   apt:
     pkg:
-     - percona-server-server-5.7
-     - percona-server-client-5.7
+     - "percona-server-server-{{ percona_version }}"
+     - "percona-server-client-{{ percona_version }}"
     state: present
 
 - name: percona is running
