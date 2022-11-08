@@ -1,6 +1,6 @@
-# ansible-common
+# ansible-percona
 
-Setups [Percona Server](https://www.percona.com/software/mysql-database/percona-server) 5.7 from Percona APT repository.
+Setups [Percona Server](https://www.percona.com/software/mysql-database/percona-server) from Percona APT repository.
 
 ## Example playbook
 
