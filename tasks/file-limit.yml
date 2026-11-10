@@ -10,6 +10,6 @@
     dest: /lib/systemd/system/mysql.service.d/file-limit.conf
     content: |
       [Service]
-      LimitNOFILE={{ percona_nofile }}
+      LimitNOFILE=infinity
   notify:
     - restart mysql service

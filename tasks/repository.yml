@@ -1,14 +1,27 @@
 ---
 
-- name: percona apt key present
-  apt_key:
-   id: 9334A25F8507EFA5
-   keyserver: keyserver.ubuntu.com
-   state: present
+- name: Gather the package facts
+  ansible.builtin.package_facts:
+    manager: auto
 
-- name: percona apt list present
-  apt_repository:
-    repo: "deb http://repo.percona.com/apt {{ ansible_distribution_release }} main"
-    filename: percona
-    state: present
-    update_cache: true
+- name: Download percona-release.deb package
+  ansible.builtin.get_url:
+    url: "https://repo.percona.com/apt/percona-release_latest.{{ ansible_distribution_release }}_all.deb"
+    dest: /tmp/percona-release.deb
+  when: "'percona-release' not in ansible_facts.packages"
+
+- name: Install percona-release package
+  ansible.builtin.apt:
+    deb: /tmp/percona-release.deb
+  when: "'percona-release' not in ansible_facts.packages"
+
+- name: Remove percona-release.deb
+  ansible.builtin.file:
+    path: /tmp/percona-release.deb
+    state: absent
+  when: "'percona-release' not in ansible_facts.packages"
+
+- name: Percona 8.0 repository is enabled
+  command:
+    cmd: percona-release setup -y ps80
+    creates: /etc/apt/sources.list.d/percona-ps-80-release.list
