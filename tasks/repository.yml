@@ -6,7 +6,7 @@
 
 - name: Download percona-release.deb package
   ansible.builtin.get_url:
-    url: "https://repo.percona.com/apt/percona-release_latest.{{ ansible_distribution_release }}_all.deb"
+    url: "https://repo.percona.com/apt/percona-release_latest.generic_all.deb"
     dest: /tmp/percona-release.deb
   when: "'percona-release' not in ansible_facts.packages"
 
@@ -21,7 +21,7 @@
     state: absent
   when: "'percona-release' not in ansible_facts.packages"
 
-- name: Percona 8.0 repository is enabled
+- name: Percona 8.4 LTS repository is enabled
   command:
-    cmd: percona-release setup -y ps80
-    creates: /etc/apt/sources.list.d/percona-ps-80-release.list
+    cmd: percona-release setup -y ps-84-lts
+    creates: /etc/apt/sources.list.d/percona-ps-84-lts-release.list

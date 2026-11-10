@@ -14,8 +14,8 @@
     value: "{{ percona_root_password }}"
     vtype: "password"
   with_items:
-   - { question: 'percona-server-server/root_password' }
-   - { question: 'percona-server-server/root_password_again' }
+   - { question: 'percona-server-server/root-pass' }
+   - { question: 'percona-server-server/re-root-pass' }
   when: "'percona-server-server' not in ansible_facts.packages"
   no_log: true
 

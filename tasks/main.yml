@@ -4,4 +4,8 @@
 - import_tasks: install.yml
 - import_tasks: file-limit.yml
 - import_tasks: mycnf.yml
+
+- name: apply mysql configuration before managing credentials
+  meta: flush_handlers
+
 - import_tasks: credentials.yml
