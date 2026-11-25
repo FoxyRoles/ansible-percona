@@ -1,25 +1,35 @@
 ---
 
-- name: Gather the package facts
-  ansible.builtin.package_facts:
-    manager: auto
+- name: Check whether Percona packages are installed
+  ansible.builtin.command:
+    argv:
+      - dpkg-query
+      - --show
+      - '--showformat=${Package} ${db:Status-Status}\n'
+      - percona-release
+      - percona-server-server
+    expand_argument_vars: false
+  register: percona_packages
+  failed_when: percona_packages.rc not in [0, 1]
+  changed_when: false
+  check_mode: false
 
 - name: Download percona-release.deb package
   ansible.builtin.get_url:
     url: "https://repo.percona.com/apt/percona-release_latest.generic_all.deb"
     dest: /tmp/percona-release.deb
-  when: "'percona-release' not in ansible_facts.packages"
+  when: "'percona-release installed' not in percona_packages.stdout_lines"
 
 - name: Install percona-release package
   ansible.builtin.apt:
     deb: /tmp/percona-release.deb
-  when: "'percona-release' not in ansible_facts.packages"
+  when: "'percona-release installed' not in percona_packages.stdout_lines"
 
 - name: Remove percona-release.deb
   ansible.builtin.file:
     path: /tmp/percona-release.deb
     state: absent
-  when: "'percona-release' not in ansible_facts.packages"
+  when: "'percona-release installed' not in percona_packages.stdout_lines"
 
 - name: Percona 8.4 LTS repository is enabled
   command:

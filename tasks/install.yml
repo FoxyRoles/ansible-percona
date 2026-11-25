@@ -13,10 +13,10 @@
     question: "{{ item.question }}"
     value: "{{ percona_root_password }}"
     vtype: "password"
-  with_items:
-   - { question: 'percona-server-server/root-pass' }
-   - { question: 'percona-server-server/re-root-pass' }
-  when: "'percona-server-server' not in ansible_facts.packages"
+  loop:
+    - { question: 'percona-server-server/root-pass' }
+    - { question: 'percona-server-server/re-root-pass' }
+  when: "'percona-server-server installed' not in percona_packages.stdout_lines"
   no_log: true
 
 - name: percona is installed
@@ -44,10 +44,10 @@
   copy:
     src: "{{ item }}.cnf"
     dest: "/etc/mysql/conf.d/{{ item }}.cnf"
-  with_items:
-   - binlog
-   - client
-   - mysqldump
-   - server
+  loop:
+    - binlog
+    - client
+    - mysqldump
+    - server
   notify:
    - restart mysql
