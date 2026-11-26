@@ -1,0 +1,28 @@
+---
+
+- name: Check explicitly selected authentication plugins
+  ansible.builtin.assert:
+    that: percona_explicit_auth_plugins | difference(['caching_sha2_password', 'mysql_native_password']) | length == 0
+    fail_msg: Set auth_plugin to caching_sha2_password or mysql_native_password.
+
+- name: Install the Python MySQL driver
+  ansible.builtin.apt:
+    name: python3-pymysql
+    state: present
+  register: percona_mysql_driver
+
+- name: Read account authentication plugins and the server's native plugin state
+  ansible.mysql.mysql_query:
+    login_unix_socket: /run/mysqld/mysqld.sock
+    query:
+      - SELECT User AS name, LOWER(Host) AS host, plugin FROM mysql.user
+      - >-
+        SELECT EXISTS(SELECT 1 FROM information_schema.PLUGINS
+        WHERE PLUGIN_NAME = 'mysql_native_password' AND PLUGIN_STATUS = 'ACTIVE') AS native_password_loaded
+  register: percona_account_plugins
+  changed_when: false
+  check_mode: false
+  when: >-
+    not ansible_check_mode or
+    ('percona-server-server installed' in percona_packages.stdout_lines and percona_mysql_driver is not changed)
+  no_log: true

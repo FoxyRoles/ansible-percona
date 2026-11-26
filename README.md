@@ -6,8 +6,8 @@ Installs and configures [Percona Server for MySQL](https://www.percona.com/softw
 
 - Debian or Ubuntu with APT and systemd, on a release for which Percona provides the `ps-84-lts` repository.
 - Root privileges on the managed host, either directly or with `become: true`.
-- Python 3 with `python3-apt` on the managed host for gathering installed package facts; the role gathers these facts itself.
-- The `ansible.mysql` collection when managing databases or users (`ansible-galaxy collection install ansible.mysql`). The role uses `ansible.mysql.mysql_db` and `ansible.mysql.mysql_user` and installs `python3-pymysql` on the managed host when needed.
+- Python 3 with `python3-apt` on the managed host.
+- The `ansible.mysql` collection (`ansible-galaxy collection install ansible.mysql`). The role installs `python3-pymysql` on the managed host and reads existing account plugins before applying the server configuration.
 - A writable password directory on the Ansible controller when using generated passwords.
 
 ## Example playbook
@@ -43,7 +43,8 @@ Each user requires `name`, `host`, and `database`. The role grants `ALL` privile
 | `percona_pass_complexity` | `ascii_letters,digits` | Character sets passed to the Ansible password lookup. |
 | `percona_db_collation` | `utf8mb4_general_ci` | Collation for newly created databases. |
 | `percona_databases` | Undefined; creation skipped | List of database names to create. |
-| `percona_users` | Undefined; creation skipped | List of user definitions, each with an optional `password`. |
+| `percona_users` | Undefined; creation skipped | List of user definitions, each with an optional `password` and `auth_plugin`. |
+| `percona_enable_mysql_native_password` | `false` | Set to `true` to enable the legacy plugin even when no account needs it. |
 
 Generated passwords are stored in plaintext on the controller and reused on subsequent runs:
 
@@ -53,6 +54,10 @@ Generated passwords are stored in plaintext on the controller and reused on subs
 Keep this directory private and retain it between runs. Generated user passwords are keyed by username, so accounts with the same name at different hosts share a generated password. Changing the password length or character sets does not regenerate existing passwords. Supplied passwords can be stored in Ansible Vault.
 
 The role writes root client credentials to `/root/.my.cnf` with mode `0600`. Changing `percona_root_password` after installation updates this file but does not change the existing MySQL root account password; coordinate root password rotation separately.
+
+New role-managed accounts use `caching_sha2_password` by default. Existing accounts keep their authentication plugin unless `auth_plugin` is explicitly set. After checking the application's connector, set `auth_plugin: caching_sha2_password` on a managed account to migrate it. The role derives a stable salt from the inventory hostname, username and MySQL host so that subsequent runs can compare the password hash.
+
+An explicit `auth_plugin: mysql_native_password` enables the legacy plugin before the account is managed. The role also keeps the plugin enabled for any existing account using it, including accounts outside `percona_users`. After the last such account migrates, the role disables the plugin during the same run unless the plugin is explicitly enabled.
 
 ## Installation and configuration
 
@@ -73,13 +78,13 @@ The previous role-managed `/etc/mysql/conf.d/mysqld.cnf` is removed because it i
 
 The shipped server configuration includes:
 
-- `utf8mb4` as the server character set and `mysql_native_password` as the authentication policy. The role explicitly enables this legacy plugin with `mysql_native_password = ON` because MySQL 8.4 disables it by default. This preserves compatibility with the existing user-management tasks and older application clients; the upstream default for new 8.4 installations is `caching_sha2_password`.
+- `utf8mb4` as the server character set. The server uses MySQL's default authentication policy, with `caching_sha2_password` for new accounts and optional support for the legacy plugin.
 - `sql_mode = NO_ENGINE_SUBSTITUTION` and disabled hostname resolution.
 - Error and slow-query logs under `/var/log/mysql`, with slow-query logging enabled.
 - A fixed 2 GB InnoDB buffer pool, two buffer-pool instances, and `O_DIRECT` flushing.
 - `innodb_doublewrite = 0` and `innodb_flush_log_at_trx_commit = 0`. These settings trade crash durability for performance: committed transactions can be lost and pages can be corrupted after a crash. Review them for the target workload.
 
-Binary logging is disabled, so this configuration does not provide binlog-based replication or point-in-time recovery. Server tuning is supplied as static files under `files/`; it is not exposed through role variables.
+Binary logging is disabled, so this configuration does not provide binlog-based replication or point-in-time recovery. Server tuning is in `templates/server.cnf.j2` and the static files under `files/`.
 
 Installation-time telemetry is disabled with `PERCONA_TELEMETRY_DISABLE=1`. The role also stops and disables `percona-telemetry-agent` and sets `percona_telemetry_disable = 1` in the server configuration. The telemetry package and its system group are retained for package dependencies and upgrades. See [Percona telemetry documentation](https://docs.percona.com/percona-server/8.4/telemetry.html).
 

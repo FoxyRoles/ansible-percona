@@ -6,3 +6,4 @@ percona_pass_complexity: "ascii_letters,digits" # ascii_letters,digits,hexdigits
 percona_root_password: "{{ lookup('password', percona_local_passdb ~ '/' ~ inventory_hostname ~ '/percona.root', chars=percona_pass_complexity, length=percona_pass_len) }}"
 
 percona_db_collation: utf8mb4_general_ci
+percona_enable_mysql_native_password: false

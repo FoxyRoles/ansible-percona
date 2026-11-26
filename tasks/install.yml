@@ -48,6 +48,5 @@
     - binlog
     - client
     - mysqldump
-    - server
   notify:
-   - restart mysql
+    - restart mysql

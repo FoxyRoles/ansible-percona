@@ -1,0 +1,10 @@
+---
+
+- name: Configure the Percona server
+  ansible.builtin.template:
+    src: server.cnf.j2
+    dest: /etc/mysql/conf.d/server.cnf
+    mode: '0644'
+  register: percona_server_config
+  changed_when: percona_server_config.changed or (percona_mysql_native_password_reload | default(false))
+  notify: restart mysql

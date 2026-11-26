@@ -5,7 +5,56 @@
 - import_tasks: file-limit.yml
 - import_tasks: mycnf.yml
 
-- name: apply mysql configuration before managing credentials
-  meta: flush_handlers
+- name: Configure Percona authentication and access
+  vars:
+    percona_managed_users: "{{ percona_users | default([]) | flatten(1, skip_nulls=false) }}"
+    percona_explicit_auth_plugins: >-
+      {{ percona_managed_users | selectattr('auth_plugin', 'defined') | map(attribute='auth_plugin') | list }}
+    percona_mysql_native_password_requested: >-
+      {{ percona_enable_mysql_native_password | bool or 'mysql_native_password' in percona_explicit_auth_plugins }}
+    percona_mysql_native_password_in_use: >-
+      {{ percona_account_plugins.query_result[0] | default([])
+        | selectattr('plugin', 'equalto', 'mysql_native_password') | list | length > 0 }}
+  block:
+    - ansible.builtin.import_tasks: authentication.yml
 
-- import_tasks: credentials.yml
+    - name: Configure the server for the requested and existing accounts
+      ansible.builtin.import_tasks: server-config.yml
+      vars:
+        percona_mysql_native_password_active: >-
+          {{ percona_mysql_native_password_requested or percona_mysql_native_password_in_use }}
+        percona_mysql_native_password_reload: >-
+          {{ percona_account_plugins is not skipped and
+            (percona_account_plugins.query_result[1][0].native_password_loaded | bool
+             != percona_mysql_native_password_active) }}
+      when: >-
+        percona_account_plugins is not skipped or
+        'percona-server-server installed' not in percona_packages.stdout_lines
+
+    - name: Apply MySQL configuration before managing credentials
+      ansible.builtin.meta: flush_handlers
+
+    - name: Manage Percona databases and accounts
+      ansible.builtin.import_tasks: credentials.yml
+      when: percona_account_plugins is not skipped
+
+    - name: Disable native authentication after the last legacy account is migrated
+      when:
+        - not ansible_check_mode
+        - not percona_mysql_native_password_requested
+        - percona_mysql_native_password_in_use
+        - "'caching_sha2_password' in percona_explicit_auth_plugins"
+      block:
+        - name: Check whether any accounts still use native authentication
+          ansible.mysql.mysql_query:
+            login_unix_socket: /run/mysqld/mysqld.sock
+            query: SELECT EXISTS(SELECT 1 FROM mysql.user WHERE plugin = 'mysql_native_password') AS native_password_in_use
+          register: percona_remaining_native_accounts
+          changed_when: false
+          no_log: true
+
+        - name: Turn off native authentication when no account requires it
+          ansible.builtin.import_tasks: server-config.yml
+          vars:
+            percona_mysql_native_password_active: false
+          when: not (percona_remaining_native_accounts.query_result[0][0].native_password_in_use | bool)
