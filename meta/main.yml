@@ -1,0 +1,26 @@
+---
+
+galaxy_info:
+  namespace: sunfoxcz
+  role_name: percona
+  author: Tomas Jacik
+  description: Install and configure Percona Server for MySQL 8.4 LTS.
+  company: sunfoxcz
+  license: MIT
+  min_ansible_version: '2.19'
+  platforms:
+    - name: Debian
+      versions:
+        - bookworm
+        - trixie
+    - name: Ubuntu
+      versions:
+        - jammy
+        - noble
+        - resolute
+  galaxy_tags:
+    - percona
+    - mysql
+    - database
+
+dependencies: []

@@ -32,6 +32,6 @@
   when: "'percona-release installed' not in percona_packages.stdout_lines"
 
 - name: Percona 8.4 LTS repository is enabled
-  command:
+  ansible.builtin.command:
     cmd: percona-release setup -y ps-84-lts
     creates: /etc/apt/sources.list.d/percona-ps-84-lts-release.list

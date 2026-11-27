@@ -4,9 +4,10 @@ Installs and configures [Percona Server for MySQL](https://www.percona.com/softw
 
 ## Requirements
 
+- `ansible-core` 2.19 or newer.
 - Debian or Ubuntu with APT and systemd, on a release for which Percona provides the `ps-84-lts` repository.
 - Root privileges on the managed host, either directly or with `become: true`.
-- Python 3 with `python3-apt` on the managed host.
+- Python supported by the controller's `ansible-core`, with `python3-apt` on the managed host.
 - The `ansible.mysql` collection (`ansible-galaxy collection install ansible.mysql`). The role installs `python3-pymysql` on the managed host and reads existing account plugins before applying the server configuration.
 - A writable password directory on the Ansible controller when using generated passwords.
 

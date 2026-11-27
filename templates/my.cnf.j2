@@ -1,3 +1,4 @@
+{{ ansible_managed | default('Ansible managed') | comment(prefix='', postfix='') | trim }}
 [mysql]
 prompt='mysql-\v \u@\h [\d]> '
 

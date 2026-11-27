@@ -1,3 +1,4 @@
+{{ ansible_managed | default('Ansible managed') | comment(prefix='', postfix='') | trim }}
 [mysqld]
 character_set_server = utf8mb4
 sql_mode = NO_ENGINE_SUBSTITUTION

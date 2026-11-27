@@ -1,12 +1,12 @@
 ---
 
 - name: restart mysql
-  service:
+  ansible.builtin.service:
     name: mysql
     state: restarted
 
 - name: restart mysql service
-  systemd:
+  ansible.builtin.systemd_service:
     name: mysql
     daemon_reload: yes
     state: restarted

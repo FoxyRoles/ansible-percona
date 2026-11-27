@@ -1,14 +1,14 @@
 ---
 
 - name: remove obsolete mysqld config
-  file:
+  ansible.builtin.file:
     path: /etc/mysql/conf.d/mysqld.cnf
     state: absent
   notify:
    - restart mysql
 
 - name: percona debconf settings
-  debconf:
+  ansible.builtin.debconf:
     name: "percona-server-server"
     question: "{{ item.question }}"
     value: "{{ percona_root_password }}"
@@ -20,7 +20,7 @@
   no_log: true
 
 - name: percona is installed
-  apt:
+  ansible.builtin.apt:
     pkg:
      - "percona-server-server"
      - "percona-server-client"
@@ -29,19 +29,19 @@
     PERCONA_TELEMETRY_DISABLE: "1"
 
 - name: percona is running
-  service:
+  ansible.builtin.service:
     name: mysql
     state: started
     enabled: yes
 
 - name: percona-telemetry-agent is stopped and disabled
-  service:
+  ansible.builtin.service:
     name: percona-telemetry-agent
     state: stopped
     enabled: no
 
 - name: ensure config is present
-  copy:
+  ansible.builtin.copy:
     src: "{{ item }}.cnf"
     dest: "/etc/mysql/conf.d/{{ item }}.cnf"
   loop:

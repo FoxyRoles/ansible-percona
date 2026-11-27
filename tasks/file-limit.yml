@@ -1,12 +1,12 @@
 ---
 
 - name: ensure mysql.service.d directory present
-  file:
+  ansible.builtin.file:
     path: /lib/systemd/system/mysql.service.d
     state: directory
 
 - name: ensure file-limit.conf present
-  copy:
+  ansible.builtin.copy:
     dest: /lib/systemd/system/mysql.service.d/file-limit.conf
     content: |
       [Service]

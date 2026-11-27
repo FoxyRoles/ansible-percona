@@ -1,9 +1,9 @@
 ---
 
-- import_tasks: repository.yml
-- import_tasks: install.yml
-- import_tasks: file-limit.yml
-- import_tasks: mycnf.yml
+- ansible.builtin.import_tasks: repository.yml
+- ansible.builtin.import_tasks: install.yml
+- ansible.builtin.import_tasks: file-limit.yml
+- ansible.builtin.import_tasks: mycnf.yml
 
 - name: Configure Percona authentication and access
   vars:
